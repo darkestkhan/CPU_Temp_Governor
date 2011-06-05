@@ -1,0 +1,19 @@
+Thanks to the ongoing heat wave CPU in my laptop reached few times 100°C, almost burning (BIOS shutdown really did rescue me this time), and so a thought about writing program controlling frequency of my CPU accordingly to temperature, decreasing frequency when it is too high (>90°C) and increasing it when it is not too hot (<85°C). And here it is: cpu_temp_governor, currently it works only on 2 core machines with stepping of T3400 (1GHz, 1.33GHz, 1.67GHz and 2.16GHz) and only one thermal sensor. Requires root permissions to run properly.
+
+  To compile just type ./make
+  Depends on gprbuild and Ada compiler (probably specifically on GNAT).
+
+                  Copyright © 2011, darkestkhan,
+
+    These files are free software: you can redistribute them and/or modify
+    them under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    These files are distributed in the hope that they will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
