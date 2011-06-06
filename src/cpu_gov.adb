@@ -148,6 +148,12 @@ procedure CPU_Gov is
     Ada.Text_IO.Put_Line ("Maximum frequency is: " & Freq_Step_Image (This.Max));
   end Print_CPU_Freq;
 
+  procedure Actualize_Freq (This: in out CPU_Freq) is
+  begin
+    This.Min := Get_Min_Freq (This => This);
+    This.Max := Get_Max_Freq (This => This);
+  end Actualize_Freq;
+
   Temp: Temperature;
   CPU0: CPU_Freq;
   CPU1: CPU_Freq;
@@ -158,10 +164,14 @@ begin
   loop
     Temp := Read_Temp;
     if Temp > 90.000 then
+      Actualize_Freq (CPU0);
       Dec_Freq (CPU0);
+      Actualize_Freq (CPU1);
       Dec_Freq (CPU1);
     elsif Temp < 85.000 then
+      Actualize_Freq (CPU0);
       Inc_Freq (CPU0);
+      Actualize_Freq (CPU1);
       Inc_Freq (CPU1);
     end if;
 
