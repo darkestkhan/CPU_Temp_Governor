@@ -21,7 +21,7 @@ pragma License (GPL);
 ------------------------------------------------------------------------------
 with Ada.Text_IO;
 with Ada.Integer_Text_IO;
-procedure CPU_Gov is
+procedure Start_Gov is
 
   type Temperature is delta 0.001 range -273.150 .. 130.000;
   package Temperature_IO is new Ada.Text_IO.Fixed_IO (Temperature);
@@ -190,4 +190,4 @@ begin
 
     delay 3.0;
   end loop;
-end CPU_Gov;
+end Start_Gov;

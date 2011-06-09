@@ -4,4 +4,4 @@ if ! [ -d ./obj ]
 then
   mkdir obj
 fi
-gprbuild -Pcpu_gov.gpr
+gprbuild -Pgov.gpr
