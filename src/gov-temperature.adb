@@ -20,52 +20,18 @@ pragma License (GPL);
 --   along with this program. If not, see <http://www.gnu.org/licenses/>.   --
 ------------------------------------------------------------------------------
 with Ada.Text_IO;
-with Gov.Temperature; use Gov.Temperature;
-with Gov.Frequency; use Gov.Frequency;
-procedure Start_Gov is
+with Ada.Integer_Text_IO;
+package body Gov.Temperature is
 
-  package Temperature_IO is new Ada.Text_IO.Fixed_IO (Temperature);
+  function Read_Temp return Temperature is
+    Sensor: Ada.Text_IO.File_Type;
+    Sensor_Name: constant String := "/sys/devices/virtual/thermal/thermal_zone0/temp";
+    Reading: Integer;
+  begin
+    Ada.Text_IO.Open (File => Sensor, Name => Sensor_Name, Mode => Ada.Text_IO.In_File);
+    Ada.Integer_Text_IO.Get (File => Sensor, Item => Reading);
+    Ada.Text_IO.Close (Sensor);
+    return Temperature (Float (Reading) / 1_000.0);
+  end Read_Temp;
 
-  type CPU_Array is array (Natural range <>) of CPU_Freq;
-
-  CPUs: CPU_Array (0 .. 1);
-
-  Hi_Temp: constant Temperature := 90.000;
-  Lo_Temp: constant Temperature := 85.000;
-  Temp: Temperature;
-
-begin
-  for I in CPUs'Range loop
-  Init_CPU_Freq (This => CPUs (I), Path => "/sys/devices/system/cpu/cpu0/cpufreq/");
-  end loop;
-  loop
-    Temp := Read_Temp;
-    if Temp > Hi_Temp then
-      for I in CPUs'Range loop
-        Actualize_Freq (CPUs (I));
-        Dec_Freq (CPUs (I));
-      end loop;
-    elsif Temp < Lo_Temp then
-      for I in CPUs'Range loop
-        Actualize_Freq (CPUs (I));
-        Inc_Freq (CPUs (I));
-      end loop;
-    end if;
-
-    goto No_Debug_Logs;
-    Debug_Logs:
-      declare
-      begin
-        Ada.Text_IO.Put ("Temperature is: ");
-        Temperature_IO.Put (Temp);
-        Ada.Text_IO.New_Line;
-        for I in CPUs'Range loop
-          Print_CPU_Freq (This => CPUs (I));
-        end loop;
-        Ada.Text_IO.New_Line;
-      end Debug_Logs;
-    <<No_Debug_Logs>>
-
-    delay 3.0;
-  end loop;
-end Start_Gov;
+end Gov.Temperature;
