@@ -27,16 +27,20 @@ procedure Start_Gov is
   package Temperature_IO is new Ada.Text_IO.Fixed_IO (Temperature);
 
   type CPU_Array is array (Natural range <>) of CPU_Freq;
+  type CPU_Address is array (Natural range <>) of access String;
 
   CPUs: CPU_Array (0 .. 1);
+  CPUs_Addresses: CPU_Address (CPUs'Range);
 
   Hi_Temp: constant Temperature := 90.000;
   Lo_Temp: constant Temperature := 85.000;
   Temp: Temperature;
 
 begin
+  CPUs_Addresses (0) := new String'("/sys/devices/system/cpu/cpu0/cpufreq/");
+  CPUs_Addresses (1) := new String'("/sys/devices/system/cpu/cpu1/cpufreq/");
   for I in CPUs'Range loop
-  Init_CPU_Freq (This => CPUs (I), Path => "/sys/devices/system/cpu/cpu0/cpufreq/");
+  Init_CPU_Freq (This => CPUs (I), Path => CPUs_Addresses (I).all);
   end loop;
   loop
     Temp := Read_Temp;
@@ -52,7 +56,7 @@ begin
       end loop;
     end if;
 
-    goto No_Debug_Logs;
+  --  goto No_Debug_Logs;
     Debug_Logs:
       declare
       begin
