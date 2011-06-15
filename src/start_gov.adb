@@ -20,39 +20,40 @@ pragma License (GPL);
 --   along with this program. If not, see <http://www.gnu.org/licenses/>.   --
 ------------------------------------------------------------------------------
 with Ada.Text_IO;
-with Gov.Temperature; use Gov.Temperature;
-with Gov.Frequency; use Gov.Frequency;
+with Gov.Temperature;
+with Gov.Frequency;
+use type Gov.Temperature.Temperature;
 procedure Start_Gov is
 
-  package Temperature_IO is new Ada.Text_IO.Fixed_IO (Temperature);
+  package Temperature_IO is new Ada.Text_IO.Fixed_IO (Gov.Temperature.Temperature);
 
-  type CPU_Array is array (Natural range <>) of CPU_Freq;
+  type CPU_Array is array (Natural range <>) of Gov.Frequency.CPU_Freq;
   type CPU_Address is array (Natural range <>) of access String;
 
   CPUs: CPU_Array (0 .. 1);
   CPUs_Addresses: CPU_Address (CPUs'Range);
 
-  Hi_Temp: constant Temperature := 90.000;
-  Lo_Temp: constant Temperature := 85.000;
-  Temp: Temperature;
+  Hi_Temp: constant Gov.Temperature.Temperature := 90.000;
+  Lo_Temp: constant Gov.Temperature.Temperature := 85.000;
+  Temp: Gov.Temperature.Temperature;
 
 begin
   CPUs_Addresses (0) := new String'("/sys/devices/system/cpu/cpu0/cpufreq/");
   CPUs_Addresses (1) := new String'("/sys/devices/system/cpu/cpu1/cpufreq/");
   for I in CPUs'Range loop
-  Init_CPU_Freq (This => CPUs (I), Path => CPUs_Addresses (I).all);
+  Gov.Frequency.Init_CPU_Freq (This => CPUs (I), Path => CPUs_Addresses (I).all);
   end loop;
   loop
-    Temp := Read_Temp;
+    Temp := Gov.Temperature.Read_Temp;
     if Temp > Hi_Temp then
       for I in CPUs'Range loop
-        Actualize_Freq (CPUs (I));
-        Dec_Freq (CPUs (I));
+        Gov.Frequency.Actualize_Freq (CPUs (I));
+        Gov.Frequency.Dec_Freq (CPUs (I));
       end loop;
     elsif Temp < Lo_Temp then
       for I in CPUs'Range loop
-        Actualize_Freq (CPUs (I));
-        Inc_Freq (CPUs (I));
+        Gov.Frequency.Actualize_Freq (CPUs (I));
+        Gov.Frequency.Inc_Freq (CPUs (I));
       end loop;
     end if;
 
@@ -64,7 +65,7 @@ begin
         Temperature_IO.Put (Temp);
         Ada.Text_IO.New_Line;
         for I in CPUs'Range loop
-          Print_CPU_Freq (This => CPUs (I));
+          Gov.Frequency.Print_CPU_Freq (This => CPUs (I));
         end loop;
         Ada.Text_IO.New_Line;
       end Debug_Logs;
