@@ -19,6 +19,7 @@ pragma License (GPL);
 --    You should have received a copy of the GNU General Public License     --
 --   along with this program. If not, see <http://www.gnu.org/licenses/>.   --
 ------------------------------------------------------------------------------
+with Ada.Text_IO;
 package Gov.Frequency is
 
   type Freq_Step is (First, Second, Third, Fourth);
@@ -35,8 +36,7 @@ package Gov.Frequency is
   Core_Meltdown: exception;
 
   function Freq_Step_Image (This: in Freq_Step) return String;
-
-  function Create_Pathname (From: in String) return Pathname;
+  function Freq_Step_Value (This: in String) return Freq_Step;
 
   procedure Dec_Freq (This: in out CPU_Freq);
   procedure Inc_Freq (This: in out CPU_Freq);
@@ -49,5 +49,10 @@ package Gov.Frequency is
   procedure Print_CPU_Freq (This: in CPU_Freq);
 
   procedure Actualize_Freq (This: in out CPU_Freq);
+
+  function Create_Pathname (From: in String) return Pathname;
+
+  procedure CPU_Freq_Write (File: in Ada.Text_IO.File_Type; Item: in CPU_Freq);
+  procedure CPU_Freq_Read (File: in Ada.Text_IO.File_Type; Item: out CPU_Freq);
 
 end Gov.Frequency;

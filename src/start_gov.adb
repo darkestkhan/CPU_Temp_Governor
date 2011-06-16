@@ -23,9 +23,8 @@ with Ada.Text_IO;
 with Gov.Temperature;
 with Gov.Frequency;
 use type Gov.Temperature.Temperature;
+with Gov.Temperature_IO;
 procedure Start_Gov is
-
-  package Temperature_IO is new Ada.Text_IO.Fixed_IO (Gov.Temperature.Temperature);
 
   type CPU_Array is array (Natural range <>) of Gov.Frequency.CPU_Freq;
   type CPU_Address is array (Natural range <>) of access String;
@@ -38,8 +37,8 @@ procedure Start_Gov is
   Temp: Gov.Temperature.Temperature;
 
 begin
-  CPUs_Addresses (0) := new String'("/sys/devices/system/cpu/cpu0/cpufreq/");
-  CPUs_Addresses (1) := new String'("/sys/devices/system/cpu/cpu1/cpufreq/");
+  CPUs_Addresses (0) := new String'("cpu0");
+  CPUs_Addresses (1) := new String'("cpu1");
   for I in CPUs'Range loop
   Gov.Frequency.Init_CPU_Freq (This => CPUs (I), Path => CPUs_Addresses (I).all);
   end loop;
@@ -62,7 +61,7 @@ begin
       declare
       begin
         Ada.Text_IO.Put ("Temperature is: ");
-        Temperature_IO.Put (Temp);
+        Gov.Temperature_IO.Put (Temp);
         Ada.Text_IO.New_Line;
         for I in CPUs'Range loop
           Gov.Frequency.Print_CPU_Freq (This => CPUs (I));

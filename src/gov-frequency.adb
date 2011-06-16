@@ -19,7 +19,6 @@ pragma License (GPL);
 --    You should have received a copy of the GNU General Public License     --
 --   along with this program. If not, see <http://www.gnu.org/licenses/>.   --
 ------------------------------------------------------------------------------
-with Ada.Text_IO;
 package body Gov.Frequency is
 
   function Freq_Step_Image (This: in Freq_Step) return String is
@@ -65,7 +64,7 @@ package body Gov.Frequency is
   begin
     if Freq_Step'Pos (This.Max) - Freq_Step'Pos (This.Min) > 0 then
       This.Max := Freq_Step'Val (Freq_Step'Pos (This.Max) - 1);
-      Ada.Text_IO.Open (File => File, Name => (This.Path.all & "scaling_max_freq"), Mode => Ada.Text_IO.Out_File);
+      Ada.Text_IO.Open (File => File, Name => (This.Path.all & "cpufreq/scaling_max_freq"), Mode => Ada.Text_IO.Out_File);
       Ada.Text_IO.Put_Line (File => File, Item => Freq_Step_Image (This.Max));
       Ada.Text_IO.Close (File => File);
     else
@@ -78,7 +77,7 @@ package body Gov.Frequency is
   begin
     if This.Max /= Freq_Step'Last then
       This.Max := Freq_Step'Val (Freq_Step'Pos (This.Max) + 1);
-      Ada.Text_IO.Open (File => File, Name => (This.Path.all & "scaling_max_freq"), Mode => Ada.Text_IO.Out_File);
+      Ada.Text_IO.Open (File => File, Name => (This.Path.all & "cpufreq/scaling_max_freq"), Mode => Ada.Text_IO.Out_File);
       Ada.Text_IO.Put_Line (File => File, Item => Freq_Step_Image (This.Max));
       Ada.Text_IO.Close (File => File);
     else
@@ -90,7 +89,7 @@ package body Gov.Frequency is
     File: Ada.Text_IO.File_Type;
     Result: Freq_Step;
   begin
-    Ada.Text_IO.Open (File => File, Name => (This.Path.all & "scaling_min_freq"), Mode => Ada.Text_IO.In_File);
+    Ada.Text_IO.Open (File => File, Name => (This.Path.all & "cpufreq/scaling_min_freq"), Mode => Ada.Text_IO.In_File);
     Result := Freq_Step_Value (Ada.Text_IO.Get_Line (File => File));
     Ada.Text_IO.Close (File => File);
     return Result;
@@ -100,7 +99,7 @@ package body Gov.Frequency is
     File: Ada.Text_IO.File_Type;
     Result: Freq_Step;
   begin
-    Ada.Text_IO.Open (File => File, Name => (This.Path.all & "scaling_max_freq"), Mode => Ada.Text_IO.In_File);
+    Ada.Text_IO.Open (File => File, Name => ("/sys/devices/system/cpu/" & This.Path.all & "/cpufreq/scaling_max_freq"), Mode => Ada.Text_IO.In_File);
     Result := Freq_Step_Value (Ada.Text_IO.Get_Line (File => File));
     Ada.Text_IO.Close (File => File);
     return Result;
@@ -125,5 +124,16 @@ package body Gov.Frequency is
     This.Min := Get_Min_Freq (This => This);
     This.Max := Get_Max_Freq (This => This);
   end Actualize_Freq;
+
+  procedure CPU_Freq_Write (File: in Ada.Text_IO.File_Type; Item: in CPU_Freq) is
+  begin
+    Ada.Text_IO.Put (File => File, Item => Item.Path.all & ' ' & Freq_Step_Image (Item.Min) & ' ' & Freq_Step_Image (Item.Max));
+    Ada.Text_IO.New_Line (File => File);
+  end CPU_Freq_Write;
+
+  procedure CPU_Freq_Read (File: in Ada.Text_IO.File_Type; Item: out CPU_Freq) is
+  begin
+    null; -- TODO will need to parse string
+  end CPU_Freq_Read;
 
 end Gov.Frequency;
