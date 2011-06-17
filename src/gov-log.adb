@@ -29,7 +29,7 @@ package body Gov.Log is
 
   function Date_Stamp return String is
     Current_Time: constant Ada.Calendar.Time := Ada.Calendar.Clock;
-    Day_Duration: Integer := Integer (Ada.Calendar.Seconds (Date => Current_Time));
+    Day_Duration: constant Integer := Integer (Ada.Calendar.Seconds (Date => Current_Time));
     Hour: Hour_Number;
     Hours: Integer;
     Minute: Minute_Number;
@@ -37,11 +37,11 @@ package body Gov.Log is
     Second: Second_Number;
     Seconds: Integer;
   begin
-    Seconds := Integer (Day_Duration) mod 60;
+    Seconds := Day_Duration mod 60;
     Second := Second_Number (Seconds);
-    Minutes := (Integer (Day_Duration) - Seconds) mod 3600;
+    Minutes := (Day_Duration - Seconds) mod 3600;
     Minute := Minute_Number (Minutes / 60);
-    Hours := (Integer (Day_Duration) - Seconds - Minutes);
+    Hours := (Day_Duration - Seconds - Minutes);
     Hour := Hour_Number (Hours / 3600);
     return  Ada.Calendar.Year_Number'Image (Ada.Calendar.Year (Date => Current_Time)) & '-' &
             Ada.Calendar.Month_Number'Image (Ada.Calendar.Month (Date => Current_Time)) & '-' &
