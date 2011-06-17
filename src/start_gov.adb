@@ -24,10 +24,13 @@ with Gov.Temperature;
 with Gov.Frequency;
 use type Gov.Temperature.Temperature;
 with Gov.Temperature_IO;
+with Gov.Log;
 procedure Start_Gov is
 
   type CPU_Array is array (Natural range <>) of Gov.Frequency.CPU_Freq;
   type CPU_Address is array (Natural range <>) of access String;
+
+  Log_File: Ada.Text_IO.File_Type;
 
   CPUs: CPU_Array (0 .. 1);
   CPUs_Addresses: CPU_Address (CPUs'Range);
@@ -40,8 +43,13 @@ begin
   CPUs_Addresses (0) := new String'("cpu0");
   CPUs_Addresses (1) := new String'("cpu1");
   for I in CPUs'Range loop
-  Gov.Frequency.Init_CPU_Freq (This => CPUs (I), Path => CPUs_Addresses (I).all);
+    Gov.Frequency.Init_CPU_Freq (This => CPUs (I), Path => CPUs_Addresses (I).all);
   end loop;
+  Gov.Log.Open_Log_File (File => Log_File, Name => "cpu_temp_gov.log");
+  -- TODO: add possibility to start/stop logging
+  -- TODO: add possibility to exit application
+  -- TODO: add possibility to change lo_temp/hi_temp
+
   loop
     Temp := Gov.Temperature.Read_Temp;
     if Temp > Hi_Temp then
@@ -65,11 +73,14 @@ begin
         Ada.Text_IO.New_Line;
         for I in CPUs'Range loop
           Gov.Frequency.Print_CPU_Freq (This => CPUs (I));
+          Gov.Log.Log (File => Log_File, CPU => CPUs (I), Temp => Temp);
         end loop;
         Ada.Text_IO.New_Line;
       end Debug_Logs;
     <<No_Debug_Logs>>
-
+    Ada.Text_IO.Close (File => Log_File);
+    Ada.Text_IO.Open (File => Log_File, Mode => Ada.Text_IO.Append_File, Name => "cpu_temp_gov.log");
     delay 3.0;
   end loop;
+  Gov.Log.Close_Log_File (File => Log_File);
 end Start_Gov;
