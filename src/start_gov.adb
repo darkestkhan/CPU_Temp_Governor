@@ -78,8 +78,7 @@ begin
         Ada.Text_IO.New_Line;
       end Debug_Logs;
     <<No_Debug_Logs>>
-    Ada.Text_IO.Close (File => Log_File);
-    Ada.Text_IO.Open (File => Log_File, Mode => Ada.Text_IO.Append_File, Name => "cpu_temp_gov.log");
+    Gov.Log.Commit_Log (File => Log_File);
     delay 3.0;
   end loop;
   Gov.Log.Close_Log_File (File => Log_File);
