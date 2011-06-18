@@ -92,4 +92,11 @@ package body Gov.Log is
     Ada.Text_IO.Close (File => File);
   end Close_Log_File;
 
+  procedure Commit_Log (File: out Ada.Text_IO.File_Type) is
+    Name: constant String := Ada.Text_IO.Name (File => File);
+  begin
+    Ada.Text_IO.Close (File => File);
+    Ada.Text_IO.Open (File => File, Mode => Ada.Text_IO.Append_File, Name => Name);
+  end Commit_Log;
+
 end Gov.Log;

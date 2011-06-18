@@ -35,4 +35,6 @@ package Gov.Log is
 
   procedure Close_Log_File (File: out Ada.Text_IO.File_Type);
 
+  procedure Commit_Log (File: out Ada.Text_IO.File_Type);
+
 end Gov.Log;
