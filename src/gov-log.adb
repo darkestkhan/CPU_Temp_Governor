@@ -74,7 +74,7 @@ package body Gov.Log is
     if not Ada.Text_IO.Is_Open (File => File) then
       Ada.Text_IO.Create (
         File => File,
-        Mode => Ada.Text_IO.Append_File,
+        Mode => Ada.Text_IO.Out_File,
         Name => Name);
     end if;
 
