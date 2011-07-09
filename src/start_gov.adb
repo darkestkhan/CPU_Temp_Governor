@@ -24,62 +24,97 @@ with Gov.Temperature;
 with Gov.Frequency;
 use type Gov.Temperature.Temperature;
 with Gov.Temperature_IO;
-with Gov.Log;
+with Ada.Strings.Unbounded;
+use type Ada.Strings.Unbounded.Unbounded_String;
+with Ada.Command_Line;
 procedure Start_Gov is
 
   type CPU_Array is array (Natural range <>) of Gov.Frequency.CPU_Freq;
-  type CPU_Address is array (Natural range <>) of access String;
-
-  Log_File: Ada.Text_IO.File_Type;
-
-  CPUs: CPU_Array (0 .. 1);
-  CPUs_Addresses: CPU_Address (CPUs'Range);
+  type CPU_Address is array (Natural range <>) of Ada.Strings.Unbounded.Unbounded_String;
 
   Hi_Temp: constant Gov.Temperature.Temperature := 90.000;
   Lo_Temp: constant Gov.Temperature.Temperature := 85.000;
-  Temp: Gov.Temperature.Temperature;
+
+  task Governor is
+    entry Start;
+  end Governor;
+
+  task body Governor is
+    CPUs: CPU_Array (0 .. 1);
+    CPUs_Addresses: CPU_Address (CPUs'Range);
+    Temp: Gov.Temperature.Temperature;
+  begin
+    accept Start;
+      CPUs_Addresses (0) := Ada.Strings.Unbounded.To_Unbounded_String ("cpu0");
+      CPUs_Addresses (1) := Ada.Strings.Unbounded.To_Unbounded_String ("cpu1");
+      for I in CPUs'Range loop
+        Gov.Frequency.Init_CPU_Freq (This => CPUs (I), Path => Ada.Strings.Unbounded.To_String (CPUs_Addresses (I)));
+      end loop;
+      loop
+        Temp := Gov.Temperature.Read_Temp;
+        if Temp > Hi_Temp then
+          for I in CPUs'Range loop
+            Gov.Frequency.Actualize_Freq (CPUs (I));
+            Gov.Frequency.Dec_Freq (CPUs (I));
+          end loop;
+        elsif Temp < Lo_Temp then
+          for I in CPUs'Range loop
+            Gov.Frequency.Actualize_Freq (CPUs (I));
+            Gov.Frequency.Inc_Freq (CPUs (I));
+          end loop;
+        end if;
+        delay 3.0;
+      end loop;
+  end Governor;
+
+  procedure Parse_Argv is
+
+    procedure Version is
+    begin
+      Ada.Text_IO.Put_Line (Ada.Command_Line.Command_Name & " v 0.0.1");
+    end Version;
+
+    procedure Usage is
+    begin
+      null; -- TODO
+    end Usage;
+
+    procedure Help is
+    begin
+      Ada.Text_IO.Put_Line ("CPU frequency caling governor, depending on the temperature of CPU.");
+      Usage;
+      Version;
+      Ada.Text_IO.Put_Line ("License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>");
+      Ada.Text_IO.Put_Line ("copyright (c) darkestkhan 2011");
+    end Help;
+
+    procedure Verbose is
+    begin
+      null; -- TODO
+    end Verbose;
+
+    Arg: Ada.Strings.Unbounded.Unbounded_String;
+
+  begin
+    if Ada.Command_Line.Argument_Count > 0 then
+      for I in 1 .. Ada.Command_Line.Argument_Count loop
+        Arg := Ada.Strings.Unbounded.To_Unbounded_String (Ada.Command_Line.Argument (I));
+        if Arg = Ada.Strings.Unbounded.To_Unbounded_String ("-h") or else Arg = Ada.Strings.Unbounded.To_Unbounded_String ("--help") then
+          Help;
+        elsif Arg = Ada.Strings.Unbounded.To_Unbounded_String ("-v") or else Arg = Ada.Strings.Unbounded.To_Unbounded_String ("--version") then
+          Version;
+        else
+          Usage;
+        end if;
+      end loop;
+    else
+      Governor.Start;
+    end if;
+  end Parse_Argv;
 
 begin
-  CPUs_Addresses (0) := new String'("cpu0");
-  CPUs_Addresses (1) := new String'("cpu1");
-  for I in CPUs'Range loop
-    Gov.Frequency.Init_CPU_Freq (This => CPUs (I), Path => CPUs_Addresses (I).all);
-  end loop;
-  Gov.Log.Open_Log_File (File => Log_File, Name => "cpu_temp_gov.log");
+  Governor.Start;
+end Start_Gov;
   -- TODO: add possibility to start/stop logging
   -- TODO: add possibility to exit application
   -- TODO: add possibility to change lo_temp/hi_temp
-
-  loop
-    Temp := Gov.Temperature.Read_Temp;
-    if Temp > Hi_Temp then
-      for I in CPUs'Range loop
-        Gov.Frequency.Actualize_Freq (CPUs (I));
-        Gov.Frequency.Dec_Freq (CPUs (I));
-      end loop;
-    elsif Temp < Lo_Temp then
-      for I in CPUs'Range loop
-        Gov.Frequency.Actualize_Freq (CPUs (I));
-        Gov.Frequency.Inc_Freq (CPUs (I));
-      end loop;
-    end if;
-
-  --  goto No_Debug_Logs;
-    Debug_Logs:
-      declare
-      begin
-        Ada.Text_IO.Put ("Temperature is: ");
-        Gov.Temperature_IO.Put (Temp);
-        Ada.Text_IO.New_Line;
-        for I in CPUs'Range loop
-          Gov.Frequency.Print_CPU_Freq (This => CPUs (I));
-          Gov.Log.Log (File => Log_File, CPU => CPUs (I), Temp => Temp);
-        end loop;
-        Ada.Text_IO.New_Line;
-      end Debug_Logs;
-    <<No_Debug_Logs>>
-    Gov.Log.Commit_Log (File => Log_File);
-    delay 3.0;
-  end loop;
-  Gov.Log.Close_Log_File (File => Log_File);
-end Start_Gov;
